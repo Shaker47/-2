@@ -1,0 +1,619 @@
+                                                             Лабораторная работа 4. 
+                                                                 Методы поиска.
+                                                 Выполнил студент группы Бст 2201 Сиау.Эрнест
+                                                     
+
+                                                                  Задание №1
+                                             Реализовать методы поиска в соответствии с заданием.
+                                          Организовать генерацию начального набора случайных данных.
+                            Для всех вариантов добавить реализацию добавления, поиска и удаления элементов.
+Оценить время работы каждого алгоритма поиска и сравнить его со временем работы стандартной функции поиска, используемой в выбранном языке программирования.
+
+import random
+import timeit
+import copy
+
+Генерация начального набора случайных данных:
+
+lenght = int(input("Введите длину массива: "))
+minimum = int(input("Минимальная граница: "))
+maximum = int(input("Максимальная граница: "))
+
+# генерация массива
+def generate_array(lenght, minimum, maximum):
+    array = [random.randint(minimum, maximum) for i in range(lenght)]
+    array.sort()
+    return array
+make_array = generate_array(lenght, minimum, maximum)
+print(make_array)
+
+Бинарный поиск:
+
+array = copy.deepcopy(make_array)
+# Функция бинарного поиска принимает на вход отсортированный массив и элемент, который нужно найти
+def binary_search(arr, item):
+    # нижняя и верхняя граница 
+    low ,high = 0, len(arr) - 1 
+    while low <= high:
+        mid = (low + high) // 2 # Находим средний элемент массива
+        if arr[mid] == item: # Если средний элемент равен искомому элементу, то возвращаем его индекс
+            return mid
+        elif arr[mid] > item: # Если средний элемент больше искомого, то ищем элемент в левой половине массива
+            high = mid - 1
+        else: # Иначе ищем элемент в правой половине массива
+            low = mid + 1
+    return None # Если элемент не найден, то возвращаем None
+    
+# Вставка элемента
+insert_elem = int(input("Введите элемент, который хотите вставить: ", ))
+print("Вывод массива со вставленным элементом: ")
+array.append(insert_elem)
+array.sort()
+print(array)
+
+# Удаление элемента
+delete_elem = int(input("Введите элемент, который хотите удалить: ", ))
+print("Вывод массива с удаленным элементом: ")
+array.remove(delete_elem)
+print(array)
+
+Бинарное дерево:
+
+array = copy.deepcopy(make_array)
+# Класс для создания узла бинарного дерева
+class Node:
+    def __init__(self, key):
+        self.left = None
+        self.right = None
+        self.val = key
+# Класс для создания бинарного дерева
+class BinarySearchTree:
+    def __init__(self):
+        self.root = None
+    # Метод для добавления узла в дерево
+    def insert(self, key):
+        # Если дерево пустое, то новый узел становится корневым. 
+        # Иначе, метод вызывает вспомогательный метод _insert, который добавляет новый узел рекурсивно.
+        if self.root is None:
+            self.root = Node(key)
+        else:
+            self._insert(key, self.root)
+    # Вспомогательный метод для рекурсивного добавления узла в дерево
+    def _insert(self, key, node):
+        # Если значение key меньше, чем значение текущего узла node.val, 
+        # то рекурсивно вызывается метод _insert(key, node.left), который добавляет новый узел в левое поддерево
+        if key < node.val:
+            if node.left is None:
+                node.left = Node(key)
+            else:
+                self._insert(key, node.left)
+        # Если значение key больше, чем значение текущего узла node.val, 
+        # то рекурсивно вызывается метод _insert(key, node.right), который добавляет новый узел в правое поддерево
+        elif key > node.val:
+            if node.right is None:
+                node.right = Node(key)
+            else:
+                self._insert(key, node.right)
+    # Метод для поиска узла в дереве
+    def search(self, key):
+        return self._search(key, self.root)
+    # Вспомогательный метод для рекурсивного поиска узла в дереве
+    def _search(self, key, node):
+        if node is None or node.val == key:
+            return node
+        elif key < node.val:
+            return self._search(key, node.left)
+        else:
+            return self._search(key, node.right)
+    # Метод для удаления узла из дерева
+    def delete(self, key):
+        # Если узел не найден в дереве, то метод ничего не делает. 
+        # Иначе, метод вызывает вспомогательный метод _delete, который удаляет узел рекурсивно.
+        self.root = self._delete(key, self.root)
+    # Вспомогательный метод для рекурсивного удаления узла из дерева
+    def _delete(self, key, node):
+        # Если текущий узел пустой (None), то метод возвращает пустое значение.
+        if node is None:
+            return node
+        # Если ключ удаляемого узла меньше ключа текущего узла, то метод вызывает себя рекурсивно для левого потомка текущего узла.
+        elif key < node.val:
+            node.left = self._delete(key, node.left)
+        # Если ключ удаляемого узла больше ключа текущего узла, то метод вызывает себя рекурсивно для правого потомка текущего узла.
+        elif key > node.val:
+            node.right = self._delete(key, node.right)
+        # Если ключ удаляемого узла равен ключу текущего узла, то метод проверяет, есть ли у удаляемого узла потомки.
+        else:
+            # Если у удаляемого узла нет потомков, то метод возвращает пустое значение.
+            if node.left is None:
+                return node.right
+            # Если у удаляемого узла есть только один потомок, то этот потомок заменяет удаляемый узел.
+            elif node.right is None:
+                return node.left
+            # Если у удаляемого узла есть два потомка, то метод находит узел с минимальным значением в правом поддереве, 
+            # заменяет удаляемый узел этим узлом и рекурсивно удаляет узел с минимальным значением из правого поддерева.
+            else:
+                min_node = self._find_min(node.right)
+                node.val = min_node.val
+                node.right = self._delete(min_node.val, node.right)
+        return node
+    # обход дерева в порядке in-order (левое поддерево, узел, правое поддерево) и возвращает список элементов дерева. 
+    def inorder_traversal(self):
+        result = []
+        self._inorder_traversal(self.root, result)
+        return result
+    # рекурсивный обход дерева в порядке in-order, начиная с левого поддерева, 
+    # затем добавляет значение текущего узла в список result и переходит к правому поддереву
+    def _inorder_traversal(self, node, result):
+        if node is not None:
+            self._inorder_traversal(node.left, result)
+            result.append(node.val)
+            self._inorder_traversal(node.right, result)
+
+# Создание бинарного дерева и добавление элементов
+bst = BinarySearchTree()
+for num in array:
+    bst.insert(num)
+
+# Добавление элемента в дерево
+add_key = int(input("Введите элемент, который хотите вставить: "))
+bst.insert(add_key)
+print('Бинарное дерево после добавления элемента', add_key, ':', bst.inorder_traversal())
+
+# Удаление элемента из дерева
+delete_key = int(input("Введите элемент, который хотите удалить: "))
+bst.delete(delete_key)
+print('Бинарное дерево после удаления элемента', delete_key, ':', bst.inorder_traversal())
+
+
+Фиббоначиев поиск:
+
+array = copy.deepcopy(make_array)
+
+# Фиббоначиев поиск
+def fibonacci_search(mas, x):
+    # первые два числа и третье выраженное суммой прошлых
+    first_number, second_number = 0, 1
+    summary_number = first_number + second_number
+    # находит наименьшее число в последовательности Фибоначчи, которое больше или равно длине списка
+    while summary_number < len(mas):
+        # обновляет значения первого и второго чисел в последовательности Фибоначчи для подготовки к следующей итерации.
+        first_number, second_number= second_number, summary_number
+        summary_number = first_number + second_number
+    index = -1
+    # пока текущее число в последовательности Фибоначчи больше 1.
+    while summary_number > 1:
+        # i ищем для того, чтобы понять на сколько вниз нам сдвигаться
+        i = min(index+first_number, len(mas)-1)
+        if mas[i] < x:
+            # перемещаем  наши значения на два шага вниз и индекс становится индексом элемента
+            summary_number, second_number = second_number, first_number
+            first_number = summary_number - second_number
+            index = i
+        elif mas[i] > x:
+            # перемещаем наши значения на один шаг вниз
+            summary_number = first_number
+            second_number = second_number - first_number
+            first_number = summary_number - second_number
+        else:
+            return i
+    # проверяем значение
+    if second_number and index < len(mas)-1 and mas[index+1] == x:
+        return index + 1
+    return 'В сгенерированном массиве нет элемента с таким значением'
+
+# Вставка элемента
+insert_elem = int(input("Введите элемент, который хотите вставить: ", ))
+print("Вывод массива со вставленным элементом: ")
+array.append(insert_elem)
+array.sort()
+print(array)
+
+# Удаление элемента
+delete_elem = int(input("Введите элемент, который хотите удалить: ", ))
+print("Вывод массива с удаленным элементом: ")
+array.remove(delete_elem)
+print(array)
+
+Интерполяционный поиск:
+
+array = copy.deepcopy(make_array)
+# Интерполяционный поиск
+def interpolation_search(arr, item):
+    # Границы: нижняя - первый элемент массива, верхняя - последний элемент массива
+    low, high = 0, len(arr) - 1 
+    
+    # Пока искомый элемент находится в интервале между нижней и верхней границами
+    while low <= high and item >= arr[low] and item <= arr[high]:
+        # Определяем приблизительную позицию искомого элемента с помощью интерполяции
+        pos = low + ((item - arr[low]) * (high - low) // (arr[high] - arr[low]))
+        if arr[pos] == item: # Если элемент на найденной позиции равен искомому элементу, то возвращаем его индекс
+            return pos
+        elif arr[pos] < item: # Если элемент на найденной позиции меньше искомого, то ищем элемент только в правой половине массива
+            low = pos + 1
+        else: # Иначе ищем элемент только в левой половине массива
+            high = pos - 1
+    return None # Если элемент не найден, то возвращаем None
+
+# Вставка элемента
+insert_elem = int(input("Введите элемент, который хотите вставить: ", ))
+print("Вывод массива со вставленным элементом: ")
+array.append(insert_elem)
+array.sort()
+print(array)
+
+# Удаление элемента
+delete_elem = int(input("Введите элемент, который хотите удалить: ", ))
+print("Вывод массива с удаленным элементом: ")
+array.remove(delete_elem)
+print(array)
+
+Стандартная функция поиска:
+
+array = copy.deepcopy(make_array)
+
+def builtin_find(arr, item):
+    return arr.index(item)
+
+# Вставка элемента
+insert_elem = int(input("Введите элемент, который хотите вставить: ", ))
+print("Вывод массива со вставленным элементом: ")
+array.append(insert_elem)
+array.sort()
+print(array)
+
+# Удаление элемента
+delete_elem = int(input("Введите элемент, который хотите удалить: ", ))
+print("Вывод массива с удаленным элементом: ")
+array.remove(delete_elem)
+print(array)
+
+
+Сравнение времени:
+
+print("Исходный массив: ")
+array = copy.deepcopy(make_array)
+print(make_array)
+find_elem = int(input("Введите элемент, который хотите найти: ", ))
+print()
+
+starttime = timeit.default_timer()
+binary_search(array, find_elem)
+endtime = timeit.default_timer()
+print("Метод Бинарного поиска работал:", endtime - starttime, "секунд")
+
+starttime = timeit.default_timer()
+bst.search(find_elem)
+endtime = timeit.default_timer()
+print("Метод Бинарного дерева работал:", endtime - starttime, "секунд")
+
+starttime = timeit.default_timer()
+fibonacci_search(array, find_elem)
+endtime = timeit.default_timer()
+print("Метод Фиббоначиев поиск работал:", endtime - starttime, "секунд")
+
+starttime = timeit.default_timer()
+interpolation_search(array, find_elem)
+endtime = timeit.default_timer()
+print("Метод Интерполяционного поиска работал:", endtime - starttime, "секунд")
+
+starttime = timeit.default_timer()
+builtin_find(array, find_elem)
+endtime = timeit.default_timer()
+print("Метод поиска работал:", endtime - starttime, "секунд")
+
+
+                                                    Задание №2
+                                             Простое рехеширование
+
+class HashTable:
+    # Конструктор класса
+    def __init__(self):
+        self.size = 10 # размер таблицы
+        self.keys = [None] * self.size # ключи
+        self.values = [None] * self.size # значения
+
+    # Метод для хеширования ключей
+    def hashFunction(self, key):
+        return key % self.size
+
+    # Метод для добавления элемента в таблицу
+    def put(self, key, data):
+        # Получаем индекс для ключа
+        index = self.hashFunction(key)
+
+        # Если ячейка пуста, добавляем элемент
+        if self.keys[index] is None:
+            self.keys[index] = key
+            self.values[index] = data
+        else:
+            # Иначе, используем линейное пробирование
+            while self.keys[index] is not None:
+                # Если ключ уже существует, заменяем значение
+                if self.keys[index] == key:
+                    self.values[index] = data
+                    return
+
+                # Иначе, ищем следующую свободную ячейку
+                index = (index + 1) % self.size
+
+            # Добавляем элемент в следующую свободную ячейку
+            self.keys[index] = key
+            self.values[index] = data
+
+    # Метод для получения значения по ключу
+    def get(self, key):
+        # Получаем индекс для ключа
+        index = self.hashFunction(key)
+
+        # Если ячейка пуста, значит элемент не найден
+        if self.keys[index] is None:
+            return None
+
+        # Иначе, используем линейное пробирование
+        while self.keys[index] is not None:
+            # Если ключ найден, возвращаем значение
+            if self.keys[index] == key:
+                return self.values[index]
+
+            # Иначе, ищем следующую ячейку
+            index = (index + 1) % self.size
+
+        # Если дошли до конца таблицы, значит элемент не найден
+        return None
+
+# Создаем хеш-таблицу
+hashTable = HashTable()
+
+# Добавляем элементы
+hashTable.put(1,"a")
+hashTable.put(2, "b")
+hashTable.put(11, "c")
+hashTable.put(21, "d")
+
+# Получаем значения
+print(hashTable.get(1)) # a
+print(hashTable.get(2)) # b
+print(hashTable.get(11)) # c
+print(hashTable.get(21)) # d
+
+Метод цепочек:
+
+# Метод цепочек - это метод решения коллизий в хэш-таблицах. Он основан на создании связанных списков (цепочек) элементов, 
+# которые имеют одинаковый хэш-код.
+
+# Создаем класс узла списка
+class Node:
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+        self.next = None
+# Создаем класс хэш-таблицы
+class HashTable:
+    def __init__(self):
+        self.capacity = 10 # начальная емкость таблицы
+        self.size = 0 # количество элементов в таблице
+        self.buckets = [None] * self.capacity # создаем пустые списки для каждой ячейки таблицы
+  
+    # Метод добавления элемента в таблицу
+    def add(self, key, value):
+        index = hash(key) % self.capacity # вычисляем хэш-код ключа и индекс ячейки таблицы
+        node = self.buckets[index] # получаем список (цепочку) элементов по индексу
+        while node: # проходим по всем элементам цепочки
+            if node.key == key: # если ключ уже есть в таблице, обновляем значение
+                node.value = value
+                return
+            node = node.next
+        # если ключа нет в таблице, добавляем его в начало цепочки
+        new_node = Node(key, value)
+        new_node.next = self.buckets[index]
+        self.buckets[index] = new_node
+        self.size += 1
+        # если количество элементов превысило 70% от емкости таблицы, увеличиваем емкость вдвое
+        if self.size > 0.7 * self.capacity:
+            self.resize()
+  
+    # Метод получения значения по ключу
+    def get(self, key):
+        index = hash(key) % self.capacity # вычисляем хэш-код ключа и индекс ячейки таблицы
+        node = self.buckets[index] # получаем список (цепочку) элементов по индексу
+        while node: # проходим по всем элементам цепочки
+            if node.key == key: # если ключ найден, возвращаем его значение
+                return node.value
+            node = node.next
+        # если ключ не найден, возвращаем None
+        return None
+  
+    # Метод удаления элемента из таблицы
+    def remove(self, key):
+        index = hash(key) % self.capacity # вычисляем хэш-код ключа и индекс ячейки таблицы
+        node = self.buckets[index] # получаем список (цепочку) элементов по индексу
+        prev = None
+        while node: # проходим по всем элементам цепочки
+            if node.key == key: # если ключ найден, удаляем элемент
+                if prev:
+                    prev.next = node.next
+                else:
+                    self.buckets[index] = node.next
+                self.size -= 1
+                return
+            prev = node
+            node = node.next
+  
+    # Метод изменения емкости таблицы
+    def resize(self):
+        new_capacity = self.capacity * 2 # увеличиваем емкость вдвое
+        new_buckets = [None] * new_capacity # создаем новую таблицу с увеличенной емкостью
+        # перехешируем все элементы из старой таблицы в новую
+        for i in range(self.capacity):
+            node = self.buckets[i]
+            while node:
+                index = hash(node.key) % new_capacity
+                if new_buckets[index]:
+                    new_node = new_buckets[index]
+                    while new_node.next:
+                        new_node = new_node.next
+                    new_node.next = Node(node.key, node.value)
+                else:
+                    new_buckets[index] = Node(node.key, node.value)
+                node = node.next
+        self.capacity = new_capacity
+        self.buckets = new_buckets
+# Пример использования
+hashtable = HashTable()
+# Добавляем ключи и значения
+hashtable.add('key1', 'value1')
+hashtable.add('key2', 'value2')
+hashtable.add('key3', 'value3')
+hashtable.add('key4', 'value4')
+# Получим значение из ключа
+print(hashtable.get('key1')) # выведет 'value1'
+# Удалим ключ
+hashtable.remove('key3')
+# Выведем значение, если ключ у нас удален
+print(hashtable.get('key3')) # выведет None
+
+
+Рехэширование с помощью псевдослучайных чисел:
+
+import random
+
+class HashTable:
+    # Конструктор класса
+    def __init__(self):
+        self.size = 10 # размер таблицы
+        self.keys = [None] * self.size # ключи
+        self.values = [None] * self.size # значения
+
+    # Метод для генерации псевдослучайного числа
+    def randomFunction(self):
+        return random.randint(0, self.size - 1)
+
+    # Метод для добавления элемента в таблицу
+    def put(self, key, data):
+        # Получаем индекс для ключа
+        index = key % self.size
+
+        # Если ячейка пуста, добавляем элемент
+        if self.keys[index] is None:
+            self.keys[index] = key
+            self.values[index] = data
+        else:
+            # Иначе, используем рехэширование с помощью псевдослучайных чисел
+            while self.keys[index] is not None:
+                # Если ключ уже существует, заменяем значение
+                if self.keys[index] == key:
+                    self.values[index] = data
+                    return
+
+                # Иначе, генерируем новый индекс
+                index = (index + self.randomFunction()) % self.size
+
+            # Добавляем элемент в новую ячейку
+            self.keys[index] = key
+            self.values[index] = data
+
+    # Метод для получения значения по ключу
+    def get(self, key):
+        # Получаем индекс для ключа
+        index = key % self.size
+
+        # Если ячейка пуста, значит элемент не найден
+        if self.keys[index] is None:
+            return None
+
+        # Иначе, используем рехэширование с помощью псевдослучайных чисел
+        while self.keys[index] is not None:
+            # Если ключ найден, возвращаем значение
+            if self.keys[index] == key:
+                return self.values[index]
+
+            # Иначе, генерируем новый индекс
+            index = (index + self.randomFunction()) % self.size
+
+        # Если дошли до конца таблицы, значит элемент не найден
+        return None
+
+
+
+# Создаем хеш-таблицу
+hashTable = HashTable()
+
+# Добавляем элементы
+hashTable.put(1, "a")
+hashTable.put(2, "b")
+hashTable.put(11, "c")
+hashTable.put(21, "d")
+
+# Получаем значения
+print(hashTable.get(1)) # a
+print(hashTable.get(2)) # b
+
+                                                     Задание №3
+                         Расставить на стандартной 64-клеточной шахматной доске 8 ферзей так, 
+                        чтобы ни один из них не находился под боем другого». Подразумевается, 
+что ферзь бьёт все клетки, расположенные по вертикалям, горизонталям и обеим диагоналям Написать программу, 
+                            которая находит хотя бы один способ решения задач.
+
+# Функция для проверки, угрожают ли два ферзя друг другу или нет
+def isSafe(mat, row, column):
+    # возвращает false, если два ферзя используют один и тот же столбец.
+    for i in range(row):
+        if mat[i][column] == 'Q':
+            return False
+ 
+    # возвращает false, если два ферзя делят одну и ту же `диагональ`.
+    i, j = row, column
+    while i >= 0 and j >= 0:
+        if mat[i][j] == 'Q':
+            return False
+        i = i - 1
+        j = j - 1
+ 
+    # возвращает false, если два ферзя делят одну и ту же диагональ `/`
+    i, j = row, column
+    while i >= 0 and j < len(mat):
+        if mat[i][j] == 'Q':
+            return False
+        i = i - 1
+        j = j + 1
+    return True
+
+# вывод расстоновки ферзей
+def printSolution(mat):
+    for i, row in enumerate(mat):
+        print(8 - i, end=" ")
+        for j, cell in enumerate(row):
+            if cell == "Q":
+                print(" Q ", end=" ")
+            else:
+                print(" - ", end=" ")
+        print()
+    print("   a   b   c   d   e   f   g   h")
+    print()
+
+# расстановка ферзей на шахматной доске.
+def nQueen(mat, row):
+    #, если N ферзей расставлены успешно, вывести решение
+    if row == len(mat):
+        printSolution(mat)
+        return
+    # поместите ферзя на каждую клетку в текущем ряду `row`
+    # и повторяться для каждого действительного движения
+    for i in range(len(mat)):
+        #, если никакие два ферзя не угрожают друг другу
+        if isSafe(mat, row, i):
+            # поставить ферзя на текущую клетку
+            mat[row][i] = 'Q'
+            # повторяется для следующей строки
+            nQueen(mat, row + 1)
+            # вернуться и убрать ферзя с текущего поля
+            mat[row][i] = '–'
+            
+mat = [['–' for x in range(8)] for y in range(8)]
+nQueen(mat, 0)
+
+
+                                                         Вывод
+                                Реализовал методы поиска в соответствии с заданием. 
+                                   Реализовал методы для работы с хеш-таблицами. 
+                             Выполнил задание на расстановку ферзей на шахматной доске.
